@@ -2,6 +2,20 @@ import Link from "next/link";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { requireAuth } from "@/lib/requireAuth";
 
+type ChangelogType = "feature" | "fix" | "improvement" | "security" | "breaking" | "infra";
+const TYPE_BADGE: Record<ChangelogType, string> = {
+  feature:     "bg-blue-50 text-blue-700",
+  fix:         "bg-red-50 text-red-600",
+  improvement: "bg-green-50 text-green-700",
+  security:    "bg-orange-50 text-orange-700",
+  breaking:    "bg-red-100 text-red-800",
+  infra:       "bg-slate-100 text-slate-600",
+};
+const TYPE_LABEL: Record<ChangelogType, string> = {
+  feature: "Feature", fix: "Fix", improvement: "Improvement",
+  security: "Security", breaking: "Breaking", infra: "Infra",
+};
+
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", {
     month: "short",
@@ -18,6 +32,7 @@ export default async function DashboardPage() {
     { count: catCount },
     { data: recent },
     { data: latestUpdated },
+    { data: recentChanges },
   ] = await Promise.all([
     supabaseAdmin.from("kb_articles").select("*", { count: "exact", head: true }),
     supabaseAdmin
@@ -35,6 +50,11 @@ export default async function DashboardPage() {
       .select("updated_at")
       .order("updated_at", { ascending: false })
       .limit(1),
+    supabaseAdmin
+      .from("kb_changelog")
+      .select("id, version, title, type, released_at")
+      .order("released_at", { ascending: false })
+      .limit(3),
   ]);
 
   const categoryIds = [...new Set((recent ?? []).map((a) => a.category_id).filter(Boolean))];
@@ -136,6 +156,40 @@ export default async function DashboardPage() {
           </div>
         )}
       </div>
+
+      {/* Recent changes */}
+      {(recentChanges ?? []).length > 0 && (
+        <div className="mt-10">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-semibold text-slate-700">Recent changes</h2>
+            <Link href="/changelog" className="text-sm text-orange-600 hover:text-orange-700 transition">
+              View full changelog →
+            </Link>
+          </div>
+          <div className="divide-y divide-slate-100">
+            {(recentChanges ?? []).map((entry) => {
+              const t = entry.type as ChangelogType;
+              const daysAgo = Math.floor(
+                (Date.now() - new Date(entry.released_at).getTime()) / 86400000
+              );
+              return (
+                <div key={entry.id} className="flex items-center gap-3 py-3">
+                  <span className="font-mono text-xs bg-slate-100 rounded px-2 py-0.5 text-slate-700 shrink-0">
+                    {entry.version}
+                  </span>
+                  <span className="text-sm text-slate-700 flex-1 truncate">{entry.title}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${TYPE_BADGE[t]}`}>
+                    {TYPE_LABEL[t]}
+                  </span>
+                  <span className="text-xs text-slate-400 shrink-0">
+                    {daysAgo === 0 ? "today" : `${daysAgo}d ago`}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Quick actions */}
       <div className="mt-10 flex gap-3">

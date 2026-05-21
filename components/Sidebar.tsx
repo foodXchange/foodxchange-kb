@@ -194,6 +194,19 @@ export function Sidebar() {
         )}
       </nav>
 
+      {/* Platform links */}
+      <div className="px-3 py-3 border-t border-white/10">
+        <Tooltip content="Every platform change, fix, and feature" position="right" className="w-full">
+          <a
+            href="/changelog"
+            className="flex items-center gap-3 px-3 py-2 text-slate-400 text-sm hover:text-white hover:bg-white/5 rounded-lg transition w-full"
+          >
+            <span className="text-base">📋</span>
+            <span>Changelog</span>
+          </a>
+        </Tooltip>
+      </div>
+
       {/* Bottom actions */}
       <div className="px-3 py-4 border-t border-white/10 space-y-2">
         <Tooltip content="Create a new article" position="right" className="w-full">

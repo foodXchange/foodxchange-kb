@@ -4,6 +4,7 @@ import Image from "next/image";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { ArticleContent } from "@/components/ArticleContent";
 import { requireAuth } from "@/lib/requireAuth";
+import { Tooltip } from "@/components/kb/Tooltip";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", {
@@ -106,12 +107,27 @@ export default async function ArticlePage({
           Last updated {formatDate(article.updated_at)}
         </span>
         <span className="text-xs text-slate-400">~{readingMins} min read</span>
-        <Link
-          href={`/articles/${slug}/edit`}
-          className="ml-auto text-sm text-orange-500 hover:text-orange-600 font-medium transition"
-        >
-          Edit →
-        </Link>
+        <div className="ml-auto flex items-center gap-3">
+          <Tooltip
+            content="Opens a print-ready version. Use Ctrl+P or the Save as PDF button."
+            position="bottom"
+          >
+            <a
+              href={`/api/kb/export/pdf?slug=${article.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 hover:border-slate-300 rounded-lg text-sm text-slate-600 hover:text-slate-900 transition"
+            >
+              📄 Export PDF
+            </a>
+          </Tooltip>
+          <Link
+            href={`/articles/${slug}/edit`}
+            className="text-sm text-orange-500 hover:text-orange-600 font-medium transition"
+          >
+            Edit →
+          </Link>
+        </div>
       </div>
 
       {/* Cover image */}

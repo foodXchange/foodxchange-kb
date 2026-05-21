@@ -8,6 +8,7 @@ import { BlockNoteView } from "@blocknote/mantine";
 import type { Block } from "@blocknote/core";
 import { AIAssistant } from "@/components/kb/AIAssistant";
 import { Tooltip } from "@/components/kb/Tooltip";
+import { VersionHistory } from "@/components/kb/VersionHistory";
 
 interface ArticleEditorProps {
   article: {
@@ -61,6 +62,8 @@ export function ArticleEditor({ article, categories, defaultCategoryId }: Articl
   const [savedAt, setSavedAt] = useState<Date | null>(null);
   const [metaOpen, setMetaOpen] = useState(false);
   const [showAI, setShowAI] = useState(false);
+  const [showVersions, setShowVersions] = useState(false);
+  const [editCount, setEditCount] = useState(0);
   const [plainText, setPlainText] = useState("");
   const articleIdRef = useRef<string | null>(article?.id ?? null);
   const articleSlugRef = useRef<string>(article?.slug ?? "");
@@ -125,6 +128,24 @@ export function ArticleEditor({ article, categories, defaultCategoryId }: Articl
           articleSlugRef.current = data.slug;
           setSaveStatus("saved");
           setSavedAt(new Date());
+          // Save a version every 10 successful saves (fire-and-forget)
+          setEditCount((c) => {
+            const next = c + 1;
+            if (next % 10 === 0 && articleIdRef.current) {
+              fetch("/api/kb/versions", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  articleId: articleIdRef.current,
+                  title: currentTitle,
+                  content: blocks,
+                  contentText: extractPlainText(blocks as Block[]),
+                  versionLabel: "auto-save",
+                }),
+              }).catch(() => {});
+            }
+            return next;
+          });
           if (explicitStatus) setStatus(currentStatus);
           if (!article) {
             router.replace(`/articles/${data.slug}/edit`);
@@ -169,6 +190,28 @@ export function ArticleEditor({ article, categories, defaultCategoryId }: Articl
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [title]);
 
+  function saveVersionNow() {
+    if (!articleIdRef.current) return;
+    const label = `Manual save — ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+    fetch("/api/kb/versions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        articleId: articleIdRef.current,
+        title: title.trim(),
+        content: editor.document,
+        contentText: plainText,
+        versionLabel: label,
+      }),
+    }).catch(() => {});
+  }
+
+  function handleRestore(content: unknown, restoredTitle: string) {
+    editor.replaceBlocks(editor.document, content as Block[]);
+    setTitle(restoredTitle);
+    setShowVersions(false);
+  }
+
   return (
     <div className="flex flex-col h-full min-h-screen">
       {/* Sticky top bar */}
@@ -189,6 +232,30 @@ export function ArticleEditor({ article, categories, defaultCategoryId }: Articl
             {saveStatus === "idle" && ""}
           </span>
         </Tooltip>
+        {articleIdRef.current && (
+          <>
+            <Tooltip content="View and restore previous versions" position="bottom">
+              <button
+                type="button"
+                onClick={() => setShowVersions((s) => !s)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-all duration-200 ${
+                  showVersions
+                    ? "bg-slate-700 text-white"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                }`}
+              >
+                🕐 History
+              </button>
+            </Tooltip>
+            <button
+              type="button"
+              onClick={saveVersionNow}
+              className="text-slate-400 text-xs hover:text-slate-700 transition"
+            >
+              Save version
+            </button>
+          </>
+        )}
         <Tooltip content="Open AI writing assistant" position="bottom">
           <button
             type="button"
@@ -308,6 +375,16 @@ export function ArticleEditor({ article, categories, defaultCategoryId }: Articl
             <BlockNoteView editor={editor} theme="light" />
           </div>
         </div>
+
+        {/* Version history panel */}
+        {showVersions && articleIdRef.current && (
+          <VersionHistory
+            articleId={articleIdRef.current}
+            articleTitle={title || article?.title || "Untitled"}
+            onRestore={handleRestore}
+            onClose={() => setShowVersions(false)}
+          />
+        )}
 
         {/* AI panel */}
         {showAI && (
