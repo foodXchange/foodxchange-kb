@@ -48,3 +48,12 @@ body {
   border-radius: 4px;
   font-size: 12px;
 }
+
+/* ── Help panel slide-up ──────────────────────────────────── */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeSlideUp {
+  animation: fadeSlideUp 0.18s ease-out;
+}

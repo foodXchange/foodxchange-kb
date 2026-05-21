@@ -13,6 +13,36 @@ function formatDate(iso: string) {
   });
 }
 
+interface BlockNode {
+  type?: string;
+  props?: { level?: number };
+  content?: Array<{ type?: string; text?: string }>;
+}
+
+interface Heading {
+  text: string;
+  anchor: string;
+  level: number;
+}
+
+function extractHeadings(content: unknown): Heading[] {
+  if (!Array.isArray(content)) return [];
+  return (content as BlockNode[])
+    .filter((b) => b.type === "heading")
+    .map((b) => {
+      const text = (b.content ?? [])
+        .filter((c) => c.type === "text")
+        .map((c) => c.text ?? "")
+        .join("");
+      return {
+        text,
+        anchor: text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
+        level: b.props?.level ?? 2,
+      };
+    })
+    .filter((h) => h.text.length > 0);
+}
+
 export default async function ArticlePage({
   params,
 }: {
@@ -38,6 +68,12 @@ export default async function ArticlePage({
       .single();
     categoryTitle = cat?.title ?? "";
   }
+
+  const wordCount = article.content_text?.split(" ").filter(Boolean).length ?? 0;
+  const readingMins = Math.max(1, Math.ceil(wordCount / 200));
+
+  const headings = extractHeadings(article.content);
+  const showToc = headings.length >= 3;
 
   return (
     <div className="max-w-3xl mx-auto px-8 py-10">
@@ -69,6 +105,7 @@ export default async function ArticlePage({
         <span className="text-sm text-slate-400">
           Last updated {formatDate(article.updated_at)}
         </span>
+        <span className="text-xs text-slate-400">~{readingMins} min read</span>
         <Link
           href={`/articles/${slug}/edit`}
           className="ml-auto text-sm text-orange-500 hover:text-orange-600 font-medium transition"
@@ -90,10 +127,40 @@ export default async function ArticlePage({
         </div>
       )}
 
+      {/* Table of contents */}
+      {showToc && (
+        <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 mt-6 mb-2">
+          <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-3">
+            On this page
+          </p>
+          <ul className="space-y-1.5">
+            {headings.map((h) => (
+              <li key={h.anchor} style={{ paddingLeft: h.level > 2 ? "1rem" : undefined }}>
+                <a
+                  href={`#${h.anchor}`}
+                  className="text-sm text-slate-600 hover:text-orange-600 transition flex items-center gap-2"
+                >
+                  <span className="text-slate-300">—</span>
+                  {h.text}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* Content */}
       <div className="mt-8 prose prose-slate max-w-none">
-        <ArticleContent content={article.content} />
+        <ArticleContent content={article.content} headings={headings} />
       </div>
+
+      {/* Floating edit button */}
+      <Link
+        href={`/articles/${slug}/edit`}
+        className="fixed bottom-6 right-24 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium px-4 py-2.5 rounded-xl shadow-lg flex items-center gap-2 transition z-30"
+      >
+        ✏️ Edit article
+      </Link>
     </div>
   );
 }

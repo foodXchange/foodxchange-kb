@@ -85,7 +85,26 @@ export default async function DashboardPage() {
           Recently Updated
         </h2>
         {(recent ?? []).length === 0 ? (
-          <p className="text-slate-400 text-sm">No articles yet.</p>
+          <div className="border-2 border-dashed border-slate-200 rounded-2xl p-12 text-center mt-6">
+            <p className="text-4xl mb-4">📝</p>
+            <h3 className="text-lg font-semibold text-slate-700 mb-2">
+              No articles yet
+            </h3>
+            <p className="text-slate-500 text-sm mb-6 max-w-sm mx-auto">
+              Start building your knowledge base. Create your first article to
+              document a workflow, feature, or process.
+            </p>
+            <a
+              href="/articles/new"
+              className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-xl text-sm font-medium transition"
+            >
+              ✍️ Write first article
+            </a>
+            <p className="text-slate-400 text-xs mt-6">
+              Tip: Type / in the editor to add any block type — headings,
+              images, videos, PDFs, and more.
+            </p>
+          </div>
         ) : (
           <div className="divide-y divide-slate-100">
             {(recent ?? []).map((article) => (

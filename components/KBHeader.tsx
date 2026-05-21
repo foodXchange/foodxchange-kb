@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Tooltip } from "@/components/kb/Tooltip";
 
 export function KBHeader() {
   const router = useRouter();
@@ -39,32 +40,38 @@ export function KBHeader() {
       </Link>
 
       {/* Center: search shortcut */}
-      <button
-        onClick={() => router.push("/search")}
-        className="hidden md:flex items-center gap-2 w-60 rounded-lg border border-white/10 bg-white/5 px-4 py-1.5 text-slate-500 text-sm hover:border-white/20 hover:bg-white/8 transition"
-      >
-        <span>🔍</span>
-        <span className="flex-1 text-left">Search articles…</span>
-        <span className="text-slate-700 text-xs">⌘K</span>
-      </button>
+      <Tooltip content="Search all articles" shortcut="Ctrl+K" position="bottom">
+        <button
+          onClick={() => router.push("/search")}
+          className="hidden md:flex items-center gap-2 w-60 rounded-lg border border-white/10 bg-white/5 px-4 py-1.5 text-slate-500 text-sm hover:border-white/20 transition"
+        >
+          <span>🔍</span>
+          <span className="flex-1 text-left">Search articles…</span>
+          <span className="text-slate-700 text-xs">⌘K</span>
+        </button>
+      </Tooltip>
 
       {/* Right: links */}
       <div className="flex items-center">
-        <a
-          href="https://fdx.trading"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-slate-400 text-xs hover:text-white transition"
-        >
-          ← fdx.trading
-        </a>
+        <Tooltip content="Go to the main FoodXchange website" position="bottom">
+          <a
+            href="https://fdx.trading"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-slate-400 text-xs hover:text-white transition"
+          >
+            ← fdx.trading
+          </a>
+        </Tooltip>
         <span className="border-l border-white/10 h-4 mx-3" />
-        <button
-          onClick={handleLogout}
-          className="text-slate-400 text-xs hover:text-white transition"
-        >
-          Sign out
-        </button>
+        <Tooltip content="Sign out" position="bottom">
+          <button
+            onClick={handleLogout}
+            className="text-slate-400 text-xs hover:text-white transition"
+          >
+            Sign out
+          </button>
+        </Tooltip>
       </div>
     </header>
   );

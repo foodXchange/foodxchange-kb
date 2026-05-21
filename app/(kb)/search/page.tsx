@@ -81,40 +81,65 @@ export default async function SearchPage({
 
       {query && (
         <div className="mt-8">
-          <p className="text-sm text-slate-500 mb-4">
-            {results.length === 0
-              ? `No results for "${query}"`
-              : `${results.length} result${results.length === 1 ? "" : "s"} for "${query}"`}
-          </p>
-
-          <div className="space-y-4">
-            {results.map((result) => {
-              const excerpt = result.content_text?.slice(0, 150) ?? "";
-              return (
-                <Link
-                  key={result.id}
-                  href={`/articles/${result.slug}`}
-                  className="block border border-slate-100 rounded-xl p-4 hover:border-orange-200 hover:bg-orange-50/30 transition"
+          {results.length === 0 ? (
+            <div className="text-center py-16">
+              <p className="text-3xl mb-4">🔍</p>
+              <h3 className="text-lg font-semibold text-slate-700 mb-2">
+                No articles found for &ldquo;{query}&rdquo;
+              </h3>
+              <p className="text-slate-500 text-sm mb-6">
+                Try different keywords or browse by category.
+              </p>
+              <div className="flex gap-3 justify-center flex-wrap">
+                <a
+                  href="/"
+                  className="border border-slate-200 hover:border-slate-300 px-4 py-2 rounded-lg text-sm text-slate-600 transition"
                 >
-                  <h2
-                    className="font-medium text-slate-900"
-                    dangerouslySetInnerHTML={{
-                      __html: highlightTerm(result.title, query),
-                    }}
-                  />
-                  <p className="text-sm text-slate-500 mt-1 line-clamp-2">
-                    {excerpt}
-                    {excerpt.length === 150 ? "…" : ""}
-                  </p>
-                  <div className="flex items-center gap-2 mt-2 text-xs text-slate-400">
-                    <span>{categoryMap[result.category_id] ?? "Uncategorized"}</span>
-                    <span>·</span>
-                    <span>{formatDate(result.updated_at)}</span>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
+                  Browse all categories
+                </a>
+                <a
+                  href="/articles/new"
+                  className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-sm transition"
+                >
+                  Write an article about this
+                </a>
+              </div>
+            </div>
+          ) : (
+            <>
+              <p className="text-sm text-slate-500 mb-4">
+                {results.length} result{results.length === 1 ? "" : "s"} for &ldquo;{query}&rdquo;
+              </p>
+              <div className="space-y-4">
+                {results.map((result) => {
+                  const excerpt = result.content_text?.slice(0, 150) ?? "";
+                  return (
+                    <Link
+                      key={result.id}
+                      href={`/articles/${result.slug}`}
+                      className="block border border-slate-100 rounded-xl p-4 hover:border-orange-200 hover:bg-orange-50/30 transition"
+                    >
+                      <h2
+                        className="font-medium text-slate-900"
+                        dangerouslySetInnerHTML={{
+                          __html: highlightTerm(result.title, query),
+                        }}
+                      />
+                      <p className="text-sm text-slate-500 mt-1 line-clamp-2">
+                        {excerpt}
+                        {excerpt.length === 150 ? "…" : ""}
+                      </p>
+                      <div className="flex items-center gap-2 mt-2 text-xs text-slate-400">
+                        <span>{categoryMap[result.category_id] ?? "Uncategorized"}</span>
+                        <span>·</span>
+                        <span>{formatDate(result.updated_at)}</span>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </div>
       )}
 

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { Tooltip } from "@/components/kb/Tooltip";
 
 interface Category {
   id: string;
@@ -58,7 +59,7 @@ export function Sidebar() {
     router.push("/login");
   }
 
-  function handleSearch(e: React.FormEvent<HTMLFormElement>) {
+  function handleSearch(e: React.SyntheticEvent) {
     e.preventDefault();
     if (searchQuery.trim()) {
       router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
@@ -66,31 +67,35 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="w-64 flex-shrink-0 bg-slate-900 flex flex-col fixed left-0 top-14 bottom-0 overflow-y-auto">
+    <aside className="w-64 shrink-0 bg-slate-900 flex flex-col fixed left-0 top-14 bottom-0 overflow-y-auto">
       {/* Logo */}
       <div className="px-5 py-5 border-b border-white/10">
-        <Link href="/" className="flex items-center gap-2">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="https://fdx.trading/logo-white.png"
-            alt="FoodXchange"
-            className="h-6 w-auto"
-          />
-          <span className="bg-orange-500 text-white text-xs px-1.5 py-0.5 rounded font-bold">
-            KB
-          </span>
-        </Link>
+        <Tooltip content="Go to dashboard" position="right">
+          <Link href="/" className="flex items-center gap-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://fdx.trading/logo-white.png"
+              alt="FoodXchange"
+              className="h-6 w-auto"
+            />
+            <span className="bg-orange-500 text-white text-xs px-1.5 py-0.5 rounded font-bold">
+              KB
+            </span>
+          </Link>
+        </Tooltip>
 
         {/* Search */}
-        <form onSubmit={handleSearch} className="mt-3">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search articles…"
-            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-slate-300 placeholder-slate-500 outline-none focus:border-orange-500/50 transition"
-          />
-        </form>
+        <Tooltip content="Search all articles" shortcut="Ctrl+K" position="right" className="w-full mt-3">
+          <form onSubmit={handleSearch} className="w-full">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search articles…"
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-slate-300 placeholder-slate-500 outline-none focus:border-orange-500/50 transition"
+            />
+          </form>
+        </Tooltip>
       </div>
 
       {/* Category + Article tree */}
@@ -113,14 +118,19 @@ export function Sidebar() {
                   <span className="text-slate-400 text-xs uppercase tracking-wider font-medium flex-1 truncate">
                     {cat.title}
                   </span>
-                  <svg
-                    className={`w-3 h-3 text-slate-500 transition-transform ${isExpanded ? "" : "-rotate-90"}`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
+                  <Tooltip
+                    content={isExpanded ? "Collapse category" : "Expand category"}
+                    position="right"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
+                    <svg
+                      className={`w-3 h-3 text-slate-500 transition-transform ${isExpanded ? "" : "-rotate-90"}`}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </Tooltip>
                 </button>
                 <Link
                   href={`/articles/new?category=${cat.id}`}
@@ -154,13 +164,18 @@ export function Sidebar() {
                               : "text-slate-300 hover:text-white hover:bg-white/5"
                           }`}
                         >
-                          <span
-                            className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-                              article.status === "published"
-                                ? "bg-green-400"
-                                : "bg-slate-500"
-                            }`}
-                          />
+                          <Tooltip
+                            content={article.status === "published" ? "Published — visible in search" : "Draft — only visible to you"}
+                            position="right"
+                          >
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                                article.status === "published"
+                                  ? "bg-green-400"
+                                  : "bg-slate-500"
+                              }`}
+                            />
+                          </Tooltip>
                           <span className="truncate">{article.title}</span>
                         </Link>
                       );
@@ -181,19 +196,23 @@ export function Sidebar() {
 
       {/* Bottom actions */}
       <div className="px-3 py-4 border-t border-white/10 space-y-2">
-        <Link
-          href="/articles/new"
-          className="flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-xl py-2 transition w-full"
-        >
-          <span className="text-base leading-none">+</span>
-          New article
-        </Link>
-        <button
-          onClick={handleLogout}
-          className="w-full text-slate-400 hover:text-slate-200 text-sm py-2 rounded-xl hover:bg-white/5 transition"
-        >
-          Sign out
-        </button>
+        <Tooltip content="Create a new article" position="right" className="w-full">
+          <Link
+            href="/articles/new"
+            className="flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-xl py-2 transition w-full"
+          >
+            <span className="text-base leading-none">+</span>
+            New article
+          </Link>
+        </Tooltip>
+        <Tooltip content="Sign out of the knowledge base" position="right" className="w-full">
+          <button
+            onClick={handleLogout}
+            className="w-full text-slate-400 hover:text-slate-200 text-sm py-2 rounded-xl hover:bg-white/5 transition"
+          >
+            Sign out
+          </button>
+        </Tooltip>
       </div>
     </aside>
   );

@@ -1,6 +1,8 @@
 import { requireAuth } from "@/lib/requireAuth";
 import { Sidebar } from "@/components/Sidebar";
 import { KBHeader } from "@/components/KBHeader";
+import Onboarding from "@/components/kb/Onboarding";
+import HelpButton from "@/components/kb/HelpButton";
 
 export default async function KBLayout({ children }: { children: React.ReactNode }) {
   await requireAuth();
@@ -33,6 +35,8 @@ export default async function KBLayout({ children }: { children: React.ReactNode
           </footer>
         </main>
       </div>
+      <Onboarding />
+      <HelpButton />
     </div>
   );
 }

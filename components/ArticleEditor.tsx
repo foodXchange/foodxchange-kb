@@ -7,6 +7,7 @@ import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/mantine";
 import type { Block } from "@blocknote/core";
 import { AIAssistant } from "@/components/kb/AIAssistant";
+import { Tooltip } from "@/components/kb/Tooltip";
 
 interface ArticleEditorProps {
   article: {
@@ -179,35 +180,44 @@ export function ArticleEditor({ article, categories, defaultCategoryId }: Articl
           ← Back
         </Link>
         <span className="text-slate-300">|</span>
-        <span className="text-sm text-slate-400 flex-1">
-          {saveStatus === "saving" && "Saving…"}
-          {saveStatus === "saved" &&
-            `Saved${savedAt ? ` at ${savedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : ""}`}
-          {saveStatus === "unsaved" && "Unsaved changes"}
-          {saveStatus === "idle" && ""}
-        </span>
-        <button
-          type="button"
-          onClick={() => setShowAI((s) => !s)}
-          className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-            showAI
-              ? "bg-orange-500 text-white"
-              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-          }`}
+        <Tooltip content="Articles save automatically every 1.5 seconds" position="bottom">
+          <span className="text-sm text-slate-400 flex-1 cursor-default">
+            {saveStatus === "saving" && "Saving…"}
+            {saveStatus === "saved" &&
+              `Saved${savedAt ? ` at ${savedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : ""}`}
+            {saveStatus === "unsaved" && "Unsaved changes"}
+            {saveStatus === "idle" && ""}
+          </span>
+        </Tooltip>
+        <Tooltip content="Open AI writing assistant" position="bottom">
+          <button
+            type="button"
+            onClick={() => setShowAI((s) => !s)}
+            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+              showAI
+                ? "bg-orange-500 text-white"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+            }`}
+          >
+            <span>✦</span>
+            AI Assistant
+          </button>
+        </Tooltip>
+        <Tooltip
+          content={status === "published" ? "Click to unpublish (make draft)" : "Click to publish (make visible)"}
+          position="bottom"
         >
-          <span>✦</span>
-          AI Assistant
-        </button>
-        <button
-          onClick={() => setStatus((s) => (s === "draft" ? "published" : "draft"))}
-          className={`text-xs px-2.5 py-1 rounded-full border font-medium transition ${
-            status === "published"
-              ? "border-green-300 text-green-700 bg-green-50"
-              : "border-slate-200 text-slate-500 bg-slate-50"
-          }`}
-        >
-          {status === "published" ? "Published" : "Draft"}
-        </button>
+          <button
+            onClick={() => setStatus((s) => (s === "draft" ? "published" : "draft"))}
+            className={`text-xs px-2.5 py-1 rounded-full border font-medium transition ${
+              status === "published"
+                ? "border-green-300 text-green-700 bg-green-50"
+                : "border-slate-200 text-slate-500 bg-slate-50"
+            }`}
+          >
+            {status === "published" ? "Published" : "Draft"}
+          </button>
+        </Tooltip>
         <button
           onClick={() => save(status === "published" ? "published" : "published")}
           className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium px-4 py-1.5 rounded-lg transition"
@@ -250,7 +260,9 @@ export function ArticleEditor({ article, categories, defaultCategoryId }: Articl
               {metaOpen && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2 p-4 bg-slate-50 rounded-xl border border-slate-100">
                   <div>
-                    <label className="text-xs text-slate-500 block mb-1">Category</label>
+                    <Tooltip content="Choose which sidebar category this article belongs to" position="top" className="w-full">
+                  <label className="text-xs text-slate-500 block mb-1 cursor-default">Category</label>
+                </Tooltip>
                     <select
                       value={categoryId}
                       onChange={(e) => setCategoryId(e.target.value)}
@@ -265,7 +277,9 @@ export function ArticleEditor({ article, categories, defaultCategoryId }: Articl
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs text-slate-500 block mb-1">Slug</label>
+                    <Tooltip content="URL-safe identifier. Auto-generated from title. Used in the article URL." position="top" className="w-full">
+                  <label className="text-xs text-slate-500 block mb-1 cursor-default">Slug</label>
+                </Tooltip>
                     <input
                       type="text"
                       value={slug}
