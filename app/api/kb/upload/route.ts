@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export async function POST(req: Request) {
@@ -22,6 +23,7 @@ export async function POST(req: Request) {
     });
 
   if (error) {
+    Sentry.captureException(new Error(error.message));
     return Response.json({ error: "Upload failed" }, { status: 500 });
   }
 

@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
 import Anthropic from "@anthropic-ai/sdk";
 
@@ -86,7 +87,8 @@ export async function POST(req: Request) {
             }
           }
           controller.close();
-        } catch {
+        } catch (err) {
+          Sentry.captureException(err);
           controller.error(new Error("Stream interrupted"));
         }
       },
@@ -99,7 +101,8 @@ export async function POST(req: Request) {
         "Cache-Control": "no-cache",
       },
     });
-  } catch {
+  } catch (err) {
+    Sentry.captureException(err);
     return Response.json({ error: "AI request failed" }, { status: 500 });
   }
 }

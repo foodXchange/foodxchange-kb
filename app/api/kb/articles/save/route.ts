@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
@@ -65,7 +66,10 @@ export async function POST(req: Request) {
       .from("kb_articles")
       .update(payload)
       .eq("id", id);
-    if (error) return Response.json({ error: error.message }, { status: 500 });
+    if (error) {
+      Sentry.captureException(new Error(error.message));
+      return Response.json({ error: error.message }, { status: 500 });
+    }
     return Response.json({ ok: true, id, slug });
   } else {
     const { data, error } = await supabaseAdmin
@@ -73,7 +77,10 @@ export async function POST(req: Request) {
       .insert(payload)
       .select("id, slug")
       .single();
-    if (error) return Response.json({ error: error.message }, { status: 500 });
+    if (error) {
+      Sentry.captureException(new Error(error.message));
+      return Response.json({ error: error.message }, { status: 500 });
+    }
     return Response.json({ ok: true, id: data.id, slug: data.slug });
   }
 }
